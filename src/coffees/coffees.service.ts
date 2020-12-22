@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService, ConfigType } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,16 +24,14 @@ export class CoffeesService {
     @InjectRepository(Flavor)
     private readonly flavorRepository: Repository<Flavor>,
     private readonly connection: Connection,
-    private readonly configService: ConfigService,
-    @Inject(coffeesConfig.KEY)
-    private coffeesConfiguration: ConfigType<typeof coffeesConfig>,
+    private readonly configService: ConfigService, // @Inject(coffeesConfig.KEY) // private coffeesConfiguration: ConfigType<typeof coffeesConfig>,
   ) {
     /* Accessing process.env variables from ConfigService */
     const databaseHost = this.configService.get('coffees');
     console.log(databaseHost);
 
     // Now strongly typed, and able to access properties via:
-    console.log(coffeesConfiguration.foo);
+    // console.log(coffeesConfiguration.foo);
   }
 
   findAll(paginationQuery: PaginationQueryDto) {
@@ -50,10 +49,7 @@ export class CoffeesService {
     });
 
     if (!coffee) {
-      throw new HttpException(
-        `Coffee #${id} not found`,
-        HttpStatus.NOT_FOUND,
-      );
+      throw new NotFoundException(`Coffee #${id} not found`);
     }
 
     return coffee;
